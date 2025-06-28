@@ -7,8 +7,8 @@ CFLAGS := -g -O2 -Iinc/
 TARGET := bin/heatform.bin
 TARGET_ELF = $(basename ${TARGET})
 
-SRC := $(notdir $(wildcard src/*.c))
-OBJS := $(addprefix obj/, ${SRC:.c=.o})
+SRCS := $(notdir $(wildcard src/*.c))
+OBJS := $(addprefix obj/, ${SRCS:.c=.o})
 
 
 ${TARGET}: ${TARGET_ELF}
