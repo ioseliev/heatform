@@ -2,7 +2,7 @@ CC := arm-none-eabi-gcc
 LD := arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 
-CFLAGS := -g -O2 -Iinc/
+CFLAGS := -ffreestanding -fno-builtin -g -march=armv7-a -mfpu=vfpv3 -mfloat-abi=hard -O2 -Iinc/
 
 TARGET := bin/heatform.bin
 TARGET_ELF = $(basename ${TARGET})
