@@ -1,0 +1,82 @@
+#define CM_WKUP			0x44E00400					// Control Module Wakeup Registers
+#define CM_WKUP_UART0_CLKCTRL	(*(volatile unsigned int *)UART0 + 0xB4)
+
+#define UART0		0x44E09000						// UART Registers
+#define UART_THR	(*(volatile unsigned int *)UART0 + 0x0) 		// Transmit Holding Register
+#define UART_RHR	(*(volatile unsigned int *)UART0 + 0x0) 		// Receiver Holding Register
+#define UART_LSR	(*(volatile unsigned int *)UART0 + 0x14) 		// Line Status Register
+
+#define UART_LCR	(*(volatile unsigned int *)UART0 + 0xC)			// Line Control Register
+#define UART_DLL	(*(volatile unsigned int *)UART0 + 0x0)			// Divisor Latches Low Register
+#define UART_DLH	(*(volatile unsigned int *)UART0 + 0x4)			// Divisor Latches High Register
+#define UART_FCR	(*(volatile unsigned int *)UART0 + 0x8)			// FIFO Control Register
+#define UART_MDR1	(*(volatile unsigned int *)UART0 + 0x20)		// Mode Definition Register 1
+
+#define CONTROL_MODULE	0x44E10000						// Control Module Registers
+#define CONF_UART0_RXD	(*(volatile unsigned int *)CONTROL_MODULE 0x970)
+#define CONF_UART0_TXD	(*(volatile unsigned int *)CONTROL_MODULE 0x974)
+
+
+// Protótipo das funções
+void putCh(char c);
+void putString(const char *str);
+char getCh(void);
+void getString(char *buffer, unsigned int length);
+void uart0_config(void);
+void uart0_pin_mux(void);
+void uart0_clock_enable(void);
+
+// Funções
+void putCh(char c){
+	while(!(UART_LSR & UART_LSR_THRE));
+	UART_THR = c;
+}
+
+void putString(const char *str){
+    while (*str) {
+	if(*str == '\n')
+		putCh('\r');
+        putCh(*str++);
+    }
+}
+
+char getCh(void){
+	while(!(UART_LSR & (1<<0)));
+	return UART_RHR;
+}
+
+void getString(char *buffer, unsigned int length){
+	int i = 0;
+	char c;
+	while(i < length - 1){
+		c = getCh();
+		putCh(c);
+		if(c == '\r' || c == '\n'){
+			break;
+		}
+		buffer[i++] = c;
+	}
+	buffer[i] = '\0';
+}
+
+void uart0_config(void){
+	UART_MDR1 = 0x7; // Coloca em modo de configuração
+	
+	UART_LCR = 0x83; // Coloca modo de acesso à divisor
+	UART_DLL = 26; // Baudrate 115200 com clock de 48MHz : divisor = 26
+	UART_DLH = 0;
+	UART_LCR = 0x03; // Configura a UART com 8 bits, sem paridade, 1 stop bit
+	UART_FCR = 0x07; // Habilita e limpa a FIFO 
+	
+	UART_MDR1 = 0x0;
+}
+
+void uart0_pin_mux(void){
+	CONF_UART0_RXD |= 0x20;
+	CONF_UART0_TXD |= 0x00;
+}
+
+void uart0_clock_enable(void){
+	CM_WKUP_UART0_CLKCTRL = 0x2;
+	while((CM_WKUP_UART0_CLKCTRL & (0b11 << 16)) != 0);
+}
