@@ -44,7 +44,7 @@ static inline void write_line(uint8_t *place, bool target_reached, float current
 
 void push_line(canvas_info *info, state *state) {
   uint8_t *const buffer = info->buffer + CANVAS_BUFFER_START_OFFSET;
-  if (info->current_line == 5) {
+  if (info->current_line == 22) {
     memcpy(buffer + 2 * CANVAS_COLS, buffer + 3 * CANVAS_COLS, 19 * CANVAS_COLS);
     --info->current_line;
   }
