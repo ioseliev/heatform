@@ -18,16 +18,18 @@
 #define I2C_BUF			(*(volatile unsigned int *)(I2C1 + 0x94))		// Buffer Configuration Register
 #define I2C_WE			(*(volatile unsigned int *)(I2C1 + 0x34))		// I2C Wakeup Enable Register
 
-// Outras macros
-#define MLX90614_ADDR  0x5A
-#define TEMP_OBJ_REG   0x07
-
 // Protótipo das funções
+void i2c_disable_all_interrupts(void);
+void i2c_master_enable(void);
+void i2c_clock_config(void);
+void i2c_reset_mode(void);
 void i2c_interrupt_disable(void);
 void i2c_interrupt_enable(void);
-void i2c_write_reg(unsigned char slave_addr, unsigned char reg);
-unsigned short i2c_read_word(unsigned char slave_addr);
+void mlx90614_send_read_command(unsigned char slave_addr, unsigned char reg_addr);
+unsigned short mlx90614_read_word(unsigned char slave_addr);
 float mlx90614_raw_to_celsius(unsigned short raw);
-float read_temp_object();
+float mlx90614_read_temp(unsigned char reg);
+float mlx90614_read_object_temp();
+float mlx90614_read_ambient_temp();
 
 #endif
