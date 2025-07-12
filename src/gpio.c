@@ -8,16 +8,9 @@
 #define GPIO_IRQSTATUS_CLR	(*(volatile unsigned int *)GPIO1 + 0x3C)
 #define GPIO_RISINGDETECT	(*(volatile unsigned int *)GPIO1 + 0x148)
 
-#define INTC			0x48200000		// Interrupt Controller Registers
-#define INTC_SIR_IRQ		(*(volatile unsigned int *)INTC + 0x40)
-#define INTC_CONTROL		(*(volatile unsigned int *)INTC + 0x48)
-#define INTC_MIR_CLEAR3		(*(volatile unsigned int *)INTC + 0xE8)
-
-
 // Protótipos das funções
 void gpio1_rising_detect(int pin);
-void intc_ack_interrupt(int pin);
-void intc_interrupt_gpio_accept(void);
+void gpio1_ack_interrupt(int pin);
 void gpio1_interrupt_disable(int pin);
 void gpio1_interrupt_enable(int pin);
 void gpio1_output_enable(int pin);
@@ -31,10 +24,6 @@ void gpio1_rising_detect(int pin){
 
 void gpio1_ack_interrupt(int pin){
 	GPIO_IRQSTATUS = (1 << pin);
-}
-
-void intc_interrupt_gpio_accept(void){
-	INTC_MIR_CLEAR3 |= (1 << (98 - 96))
 }
 
 void gpio1_interrupt_disable(int pin){
