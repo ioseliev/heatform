@@ -2,6 +2,18 @@
 #include <types.h>
 
 
+void memset(uint8_t *dest, uint8_t value, size_t n) {
+  for (size_t i = 0; i < n; ++i) {
+    dest[i] = value;
+  }
+}
+
+void memcpy(uint8_t *dest, const uint8_t *restrict src, size_t n) {
+  for (size_t i = 0; i < n; ++i) {
+    dest[i] = src[i];
+  }
+}
+
 void reading_to_string(char buffer[5], float value) {
   const float SENSOR_MIN = -40.0;
   const float SENSOR_MAX = 125.0;
