@@ -5,7 +5,7 @@
 #include <ansi.h>
 
 
-#define CANVAS_ROWS 20
+#define CANVAS_ROWS 22
 #define CANVAS_COLS 64
 #define CANVAS_BUFFER_SIZE ((CANVAS_ROWS) * (CANVAS_COLS))
 #define CANVAS_BUFFER_START_OFFSET ((sizeof(ACS_CLEAR)) - 1)
