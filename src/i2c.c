@@ -1,10 +1,11 @@
+#include "i2c.h"
+
 #define I2C1			0x4802A000					// I2C Registers
 #define I2C_CON			(*(volatile unsigned int *)I2C1 + 0xA4)		// I2C Configuration Register
 #define I2C_CNT			(*(volatile unsigned int *)I2C1 + 0x98)		// I2C Data Counter Register
 #define I2C_SA			(*(volatile unsigned int *)I2C1 + 0xAC)		// I2C Slave Address Register
 #define	I2C_DATA		(*(volatile unsigned int *)I2C1 + 0x9C)		// Data Access Register
 #define I2C_IRQSTATUS		(*(volatile unsigned int *)I2C1 + 0x28)		// I2C Status Register
-
 
 #define I2C_PSC			(*(volatile unsigned int *)I2C1 + 0xB0)		// I2C Clock Prescaler Register
 #define I2C_SCLL		(*(volatile unsigned int *)I2C1 + 0xB4)		// I2C SCL Low Time Register
@@ -19,14 +20,6 @@
 // Outras macros
 #define MLX90614_ADDR  0x5A
 #define TEMP_OBJ_REG   0x07
-
-// Protótipo das funções
-void i2c_interrupt_disable(void);
-void i2c_interrupt_enable(void);
-void i2c_write_reg(unsigned char slave_addr, unsigned char reg);
-unsigned short i2c_read_word(unsigned char slave_addr);
-float mlx90614_raw_to_celsius(unsigned short raw);
-float read_temp_object();
 
 // Funções
 void i2c_interrupt_disable(void){
@@ -90,4 +83,3 @@ float read_temp_object(){
     unsigned short raw = i2c_read_word(MLX90614_ADDR);
     return mlx90614_raw_to_celsius(raw);
 }
-
