@@ -12,18 +12,12 @@
 #define UART_FCR	(*(volatile unsigned int *)UART0 + 0x8)			// FIFO Control Register
 #define UART_MDR1	(*(volatile unsigned int *)UART0 + 0x20)		// Mode Definition Register 1
 
-#define CONTROL_MODULE	0x44E10000						// Control Module Registers
-#define CONF_UART0_RXD	(*(volatile unsigned int *)CONTROL_MODULE 0x970)
-#define CONF_UART0_TXD	(*(volatile unsigned int *)CONTROL_MODULE 0x974)
-
-
 // Protótipo das funções
 void putCh(char c);
 void putString(const char *str);
 char getCh(void);
 void getString(char *buffer, unsigned int length);
 void uart0_config(void);
-void uart0_pin_mux(void);
 void uart0_clock_enable(void);
 
 // Funções
@@ -69,11 +63,6 @@ void uart0_config(void){
 	UART_FCR = 0x07; // Habilita e limpa a FIFO 
 	
 	UART_MDR1 = 0x0;
-}
-
-void uart0_pin_mux(void){
-	CONF_UART0_RXD |= 0x20;
-	CONF_UART0_TXD |= 0x00;
 }
 
 void uart0_clock_enable(void){
