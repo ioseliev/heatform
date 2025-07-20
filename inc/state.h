@@ -4,12 +4,23 @@
 
 
 typedef struct {
-  float current;
-  float min;
-  float max;
+  /* Configuration */
   float target;
-  enum { LOW = 0, HIGH = 1 } target_type;
-  uint16_t time;
+  enum { LOW, HIGH } target_type;
+  enum { K, C, F } unit;
+
+  /* Status */
+  bool target_reached;
+  
+  /* Sensor data */
+  float temp;
+  float temp_min;
+  float temp_max;
+
+  /* RTC data */
+  uint8_t hours;
+  uint8_t minutes;
+  uint8_t seconds;
 } state;
 
 #endif
