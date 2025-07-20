@@ -22,13 +22,13 @@ static inline void write_header(uint8_t *buffer) {
 }
 
 static inline void write_line(uint8_t *place, bool target_reached, float current, float min, float max) {
-  const uint8_t FORMAT[] = "     [T+    ] Current:       Min:       Max:      "ACS_RESET;
+  const uint8_t FORMAT[] = "     [      ] Current:        Min:        Max:       "ACS_RESET;
   
   const size_t FMT_ACS_OFF = 0;
   const size_t FMT_TIME_OFF = 8;
   const size_t FMT_CURRENT_OFF = 23;
-  const size_t FMT_MIN_OFF = 34;
-  const size_t FMT_MAX_OFF = 45;
+  const size_t FMT_MIN_OFF = 35;
+  const size_t FMT_MAX_OFF = 47;
   
   memcpy(place, FORMAT, sizeof(FORMAT) - 1);
 
