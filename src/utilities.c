@@ -54,3 +54,12 @@ void reading_to_string(char buffer[5], float value) {
     }
   }
 }
+
+void write_time(char buffer[6], uint8_t hours, uint8_t minutes, uint8_t seconds) {
+  buffer[0] = '0' + (hours >> 4);
+  buffer[1] = '0' + (hours & 0x0F);
+  buffer[2] = '0' + (minutes >> 4);
+  buffer[3] = '0' + (minutes & 0x0F);
+  buffer[4] = '0' + (seconds >> 4);
+  buffer[5] = '0' + (seconds & 0x0F);
+}

@@ -16,28 +16,29 @@ void init_canvas(canvas_info *info, uint8_t *buffer) {
 }
 
 static inline void write_header(uint8_t *buffer) {
-  const uint8_t FORMAT[] = "Current:       Min:       Max:      " ACS_RESET;
+  const int8_t FORMAT[] = "Current:       Min:       Max:      " ACS_RESET;
   memcpy(buffer, FORMAT, sizeof(FORMAT) - 1);
   buffer[CANVAS_COLS - 1] = '\n';
 }
 
-static inline void write_line(uint8_t *place, bool target_reached, float current, float min, float max) {
+static inline void write_line(uint8_t *place, state *s) {
   const uint8_t FORMAT[] = "     [      ] Current:        Min:        Max:       "ACS_RESET;
   
   const size_t FMT_ACS_OFF = 0;
-  const size_t FMT_TIME_OFF = 8;
+  const size_t FMT_TIME_OFF = 6;
   const size_t FMT_CURRENT_OFF = 23;
   const size_t FMT_MIN_OFF = 35;
   const size_t FMT_MAX_OFF = 47;
   
   memcpy(place, FORMAT, sizeof(FORMAT) - 1);
 
-  memcpy(place + FMT_ACS_OFF, target_reached ? "\033[33m" : "\033[0 m", 5);
-  memcpy(place + FMT_TIME_OFF, "0000", 4);
+  memcpy(place + FMT_ACS_OFF, s->target_reached ? ACS_YELLOW : ACS_RESET, 5);
 
-  reading_to_string(place + FMT_CURRENT_OFF, current);
-  reading_to_string(place + FMT_MIN_OFF, min);
-  reading_to_string(place + FMT_MAX_OFF, max);
+  write_time(place + FMT_TIME_OFF, s->hours, s->minutes, s->seconds);
+
+  reading_to_string(place + FMT_CURRENT_OFF, s->temp);
+  reading_to_string(place + FMT_MIN_OFF, s->temp_min);
+  reading_to_string(place + FMT_MAX_OFF, s->temp_max);
 
   place[CANVAS_COLS - 1] = '\n';
 }
@@ -49,6 +50,6 @@ void push_line(canvas_info *info, state *state) {
     --info->current_line;
   }
   write_header(buffer + 1 * CANVAS_COLS);
-  write_line(buffer + info->current_line * CANVAS_COLS, true, state->current, state->min, state->max);
+  write_line(buffer + info->current_line * CANVAS_COLS, state);
   ++info->current_line;
 }
