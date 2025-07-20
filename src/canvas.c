@@ -15,14 +15,25 @@ void init_canvas(canvas_info *info, uint8_t *buffer) {
   buffer[CANVAS_BUFFER_SIZE - 1] = '\0';
 }
 
-static inline void write_header(uint8_t *buffer) {
-  const int8_t FORMAT[] = "Current:       Min:       Max:      " ACS_RESET;
+static inline void write_header(uint8_t *buffer, state *s) {
+  const uint8_t FORMAT[] = "     NOW Current:        Min:        Max:       " ACS_RESET;
+
+  const size_t FMT_CUR_OFF = 18;
+  const size_t FMT_MIN_OFF = 30;
+  const size_t FMT_MAX_OFF = 42;
+  
   memcpy(buffer, FORMAT, sizeof(FORMAT) - 1);
+
+  reading_to_string(buffer + FMT_CUR_OFF, s->temp);
+  reading_to_string(buffer + FMT_MIN_OFF, s->temp_min);
+  reading_to_string(buffer + FMT_MAX_OFF, s->temp_max);
+
+  buffer[CANVAS_COLS - 2] = '@';
   buffer[CANVAS_COLS - 1] = '\n';
 }
 
 static inline void write_line(uint8_t *place, state *s) {
-  const uint8_t FORMAT[] = "     [      ] Current:        Min:        Max:       "ACS_RESET;
+  const uint8_t FORMAT[] = "     [      ] Current:        Min:        Max:       " ACS_RESET;
   
   const size_t FMT_ACS_OFF = 0;
   const size_t FMT_TIME_OFF = 6;
@@ -43,13 +54,16 @@ static inline void write_line(uint8_t *place, state *s) {
   place[CANVAS_COLS - 1] = '\n';
 }
 
-void push_line(canvas_info *info, state *state) {
+void update_canvas(canvas_info *info, state *state, bool push_line) {
   uint8_t *const buffer = info->buffer + CANVAS_BUFFER_START_OFFSET;
-  if (info->current_line == CANVAS_ROWS) {
-    memcpy(buffer + 2 * CANVAS_COLS, buffer + 3 * CANVAS_COLS, 19 * CANVAS_COLS);
-    --info->current_line;
+  
+  write_header(buffer + CANVAS_COLS, state);
+  if (push_line) {
+    if (info->current_line == CANVAS_ROWS) {
+      memcpy(buffer + 2 * CANVAS_COLS, buffer + 3 * CANVAS_COLS, (CANVAS_ROWS - 3) * CANVAS_COLS);
+      --info->current_line;
+    }
+    write_line(buffer + info->current_line * CANVAS_COLS, state);
+    ++info->current_line;
   }
-  write_header(buffer + 1 * CANVAS_COLS);
-  write_line(buffer + info->current_line * CANVAS_COLS, state);
-  ++info->current_line;
 }

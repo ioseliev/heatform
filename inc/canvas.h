@@ -17,6 +17,6 @@ typedef struct {
 
 void init_canvas(canvas_info *info, uint8_t *buffer);
 
-void push_line(canvas_info *info, state *state);
+void update_canvas(canvas_info *info, state *state, bool push_line);
 
 #endif
