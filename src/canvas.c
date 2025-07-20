@@ -2,15 +2,15 @@
 #include <utilities.h>
 
 
-void init_canvas(canvas_info *info, uint8_t *buffer) {
+void canvas_init(canvas_info *info, uint8_t *buffer) {
   info->current_line = 2;
   info->buffer = buffer;
 
-  memcpy(buffer, ACS_CLEAR, sizeof(ACS_CLEAR) - 1);
+  memcpy(buffer, (const uint8_t *) ACS_CLEAR, sizeof(ACS_CLEAR) - 1);
   
   buffer += CANVAS_BUFFER_START_OFFSET;
   memset(buffer, ' ', CANVAS_BUFFER_SIZE);
-  memcpy(buffer, "HEATFORM", sizeof("HEATFORM") - 1);
+  memcpy(buffer, (const uint8_t *) "HEATFORM", sizeof("HEATFORM") - 1);
   buffer[CANVAS_COLS - 1] = '\n';
   buffer[CANVAS_BUFFER_SIZE - 1] = '\0';
 }
@@ -24,9 +24,9 @@ static inline void write_header(uint8_t *buffer, state *s) {
   
   memcpy(buffer, FORMAT, sizeof(FORMAT) - 1);
 
-  reading_to_string(buffer + FMT_CUR_OFF, s->temp);
-  reading_to_string(buffer + FMT_MIN_OFF, s->temp_min);
-  reading_to_string(buffer + FMT_MAX_OFF, s->temp_max);
+  write_float(buffer + FMT_CUR_OFF, s->temp);
+  write_float(buffer + FMT_MIN_OFF, s->temp_min);
+  write_float(buffer + FMT_MAX_OFF, s->temp_max);
 
   buffer[CANVAS_COLS - 2] = '@';
   buffer[CANVAS_COLS - 1] = '\n';
@@ -43,18 +43,18 @@ static inline void write_line(uint8_t *place, state *s) {
   
   memcpy(place, FORMAT, sizeof(FORMAT) - 1);
 
-  memcpy(place + FMT_ACS_OFF, s->target_reached ? ACS_YELLOW : ACS_RESET, 5);
+  memcpy(place + FMT_ACS_OFF, (const uint8_t *) (s->target_reached ? ACS_YELLOW : ACS_RESET), 5);
 
   write_time(place + FMT_TIME_OFF, s->hours, s->minutes, s->seconds);
 
-  reading_to_string(place + FMT_CURRENT_OFF, s->temp);
-  reading_to_string(place + FMT_MIN_OFF, s->temp_min);
-  reading_to_string(place + FMT_MAX_OFF, s->temp_max);
+  write_float(place + FMT_CURRENT_OFF, s->temp);
+  write_float(place + FMT_MIN_OFF, s->temp_min);
+  write_float(place + FMT_MAX_OFF, s->temp_max);
 
   place[CANVAS_COLS - 1] = '\n';
 }
 
-void update_canvas(canvas_info *info, state *state, bool push_line) {
+void canvas_update(canvas_info *info, state *state, bool push_line) {
   uint8_t *const buffer = info->buffer + CANVAS_BUFFER_START_OFFSET;
   
   write_header(buffer + CANVAS_COLS, state);

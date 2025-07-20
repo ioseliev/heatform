@@ -14,7 +14,7 @@ void memcpy(uint8_t *dest, const uint8_t *restrict src, size_t n) {
   }
 }
 
-void reading_to_string(char buffer[5], float value) {
+void write_float(uint8_t buffer[5], float value) {
   const float SENSOR_MIN = -40.0;
   const float SENSOR_MAX = 125.0;
   
@@ -55,7 +55,7 @@ void reading_to_string(char buffer[5], float value) {
   }
 }
 
-void write_time(char buffer[6], uint8_t hours, uint8_t minutes, uint8_t seconds) {
+void write_time(uint8_t buffer[6], uint8_t hours, uint8_t minutes, uint8_t seconds) {
   buffer[0] = '0' + (hours >> 4);
   buffer[1] = '0' + (hours & 0x0F);
   buffer[2] = '0' + (minutes >> 4);
