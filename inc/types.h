@@ -10,7 +10,9 @@ typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
-typedef enum { false = 0, true = 1 } bool;
+typedef uint8_t bool;
+static const bool false = 0;
+static const bool true = 1;
 
 typedef long ssize_t;
 typedef unsigned long size_t;
