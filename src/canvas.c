@@ -16,6 +16,7 @@ void canvas_init(canvas_info *info, uint8_t *buffer) {
     buffer[i * CANVAS_COLS + CANVAS_COLS - 1] = '\n';
   }
 
+  buffer[CANVAS_BUFFER_SIZE] = '\0';
 }
 
 static inline void write_header(uint8_t *buffer, state *s) {
