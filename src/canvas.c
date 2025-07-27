@@ -11,8 +11,11 @@ void canvas_init(canvas_info *info, uint8_t *buffer) {
   buffer += CANVAS_BUFFER_START_OFFSET;
   memset(buffer, ' ', CANVAS_BUFFER_SIZE);
   memcpy(buffer, (const uint8_t *) "HEATFORM", sizeof("HEATFORM") - 1);
-  buffer[CANVAS_COLS - 1] = '\n';
-  buffer[CANVAS_BUFFER_SIZE - 1] = '\0';
+
+  for (uint8_t i = 0; i < CANVAS_ROWS; ++i) {
+    buffer[i * CANVAS_COLS + CANVAS_COLS - 1] = '\n';
+  }
+
 }
 
 static inline void write_header(uint8_t *buffer, state *s) {
