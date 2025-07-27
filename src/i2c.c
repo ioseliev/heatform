@@ -1,95 +1,85 @@
 #include "i2c.h"
+#include "uart.h"
 
 // Funções
-void i2c_disable_all_interrupts(void){
-    I2C_IRQSTATUS = 0xFFFF;
+void espera(int tempo){
+    int i;
+    for(i = 0; i < tempo; i++);
 }
 
-void i2c_master_enable(void){
-    // Habita o módulo e ativa o modo mestre
-    I2C_CON = (1 << 15) | (1 << 10);
+void i2c_module_config(void){
+    // Configurações iniciais do módulo i2c
+    // Vamos desabilitá-lo e em seguida definirmos o valor do seu clock
+    I2C_CON = 0;
+    I2C_PSC  = 3;
+    I2C_SCLL = 60;    
+    I2C_SCLH = 60;
+    I2C_CON = (1 << 15);
 }
 
-void i2c_clock_config(void){
-    I2C_PSC = 23;
-    I2C_SCLL = 13;
-    I2C_SCLH = 15;
+void i2c_interrupt_enable(int interrrupt){
+	// Nesta função vamos habilitar interrupções de nosso interesse
+    // São elas:
+    // - Bus Free Interrupt: Vai avisar quando o barramento do i2c está livre
+    // - Transmit Data Ready Interrupt: Vai avisar quando um novo dado é requisitado (Quando o módulo está no modo receive)
+    // - Receive Data Ready Interrupt: Vai avisar quando um novo dado está apto para ser lido.
+	I2C_IRQENABLE_SET |= (1 << interrrupt);
 }
 
-void i2c_reset_mode(void){
-    I2C_CON = 0x0;
-    I2C_SYSC = 0x2;
-    while((I2C_SYSS & 0x1) == 0);
+void i2c_interrupt_disable(int interrupt){
+	// Nesta função vamos desabilitar interrupções de nosso interesse
+    // São elas:
+    // - Bus Free Interrupt: Vai avisar quando o barramento do i2c está livre
+    // - Transmit Data Ready Interrupt: Vai avisar quando um novo dado é requisitado (Quando o módulo está no modo receive)
+    // - Receive Data Ready Interrupt: Vai avisar quando um novo dado está apto para ser lido.
+	I2C_IRQENABLE_CLR &= ~(1 << interrupt);
 }
 
-void i2c_interrupt_disable(void){
-	// Desabilitar a interrupção
-	I2C_IRQENABLE_CLR = (1 << 3);
-}
+unsigned short int i2c_read_sensor(void){
+    unsigned char msb, lsb, pec;                     // Vamos declarar duas variáveis de 8 bits para guardar respectivamente os bits mais e menos significantes
+    unsigned short int data = 0;                     // Retorno da função
 
-void i2c_interrupt_enable(void){
-	// Vamos habilitar a interrupção para quando o dado recebido
-	I2C_IRQENABLE_SET = (1 << 3);
-}
+    // Passo 1: Definir o endereço do Slave Device(SD) e o comando de leitura
+    i2c_interrupt_enable(2);                        // ARDY_IE: Vamos habilitar essa interrupção para podermos verificar a disponibilidade dos registradores
+    i2c_interrupt_enable(1);                        // NACK: Vamos habilitar essa interrupção para podermos checar se o bit NACK foi recebido e dessa forma repetirmos o processo até efetuarmos a comunicação
+    I2C_IRQSTATUS = (1 << 12);                      // Liberar o barramento I2C
+    do{
+        I2C_SA = 0x5A;                              // Endereço Padrão do sensor (Default SA)
+        I2C_CNT = 1;                                // Número de Bytes envolvidos na comunicação (1 byte)
+        I2C_CON = (1 << 15) |                       // I2C_EN: Habilita o módulo I2C
+                (1 << 10) |                         // MST: Define o módulo como mestre (MST = 1)
+                (1 << 9)  |                         // TRX: Define a função do módulo como transmissor (TRX = 1)
+                (1 << 1)  |                         // STP: Gera a condição de stop quando definido como 1   
+                (1 << 0);                           // STT: Gera a condição de start quando definido como 1
+        I2C_DATA = 0x06;                            // Esse é o comando que o sensor recebe, identifica e retorna o conteúdo do registrador relacionado
+    }while(I2C_IRQSTATUS_RAW & (1 << 1));
+    I2C_IRQSTATUS = (1 << 1);                       // Limpar a interrupção NACK
+    while(!(I2C_IRQSTATUS & (1 << 2)));             // Poll para esperar que os registradores do I2C estejam prontos para serem acessados
+    I2C_IRQSTATUS = (1 << 2);                       // Limpar a interrupção ARDY
 
-void mlx90614_send_read_command(unsigned char slave_addr, unsigned char reg_addr){
-    I2C_CNT = 1;
-    I2C_SA  = slave_addr;
-    I2C_DATA = reg_addr;
-
-    I2C_CON = (1 << 15) | // I2C_EN
-               (1 << 10) | // Master mode
-               (1 << 9)  | // Transmit mode
-               (1 << 1)  | // Stop condition
-               (1 << 0);   // Start condition
-
-    while (!(I2C_IRQSTATUS & (1 << 4))); // XRDY
-    I2C_IRQSTATUS = (1 << 4);            // Limpa flag
-}
-
-unsigned short mlx90614_read_word(unsigned char slave_addr){
-    I2C_CNT = 3;            // 2 dados + 1 PEC
-    I2C_SA  = slave_addr;
-
-    I2C_CON = (1 << 15) |   // I2C_EN
-               (1 << 10) |   // Master mode
-               (0 << 9)  |   // Receive mode
-               (1 << 1)  |   // Stop
-               (1 << 0)  |   // Start
-               (1 << 2);     // Read
-
-    // LSB
-    while (!(I2C_IRQSTATUS & (1 << 3))); // RRDY
-    unsigned char lsb = I2C_DATA;
+    i2c_interrupt_enable(3);                        // RRDY: Vamos habilitar essa interrupção para sabermos que o dado solicitado foi recebido e está pronto para ser lido no I2C_DATA
+    I2C_SA = 0x5A;                                  // Definir o endereço do SD que será lido
+    I2C_CNT = 3;                                    // Vamos ler 3 bytes: MSB, LSB e PEC 
+    I2C_CON = (1 << 15) |                           // I2C_EN: Habilitar o módulo I2C   
+              (1 << 10) |                           // MST: Colocar o módulo em modo mestre  
+              (0 << 9)  |                           // TRX: Definir módulo como receptor  
+              (1 << 1)  |                           // STP: Gerar condição de stop
+              (1 << 0);                             // STT: Gerar condição de start
+    while(!(I2C_IRQSTATUS_RAW & (1 << 3)));
     I2C_IRQSTATUS = (1 << 3);
+    lsb = I2C_DATA;
 
-    // MSB
-    while (!(I2C_IRQSTATUS & (1 << 3)));
-    unsigned char msb = I2C_DATA;
+    while(!(I2C_IRQSTATUS_RAW & (1 << 3)));
     I2C_IRQSTATUS = (1 << 3);
+    msb = I2C_DATA;
 
-    // PEC (ignorar)
-    while (!(I2C_IRQSTATUS & (1 << 3)));
-    volatile unsigned char pec = I2C_DATA;
+    while(!(I2C_IRQSTATUS_RAW & (1 << 3)));
     I2C_IRQSTATUS = (1 << 3);
+    pec = I2C_DATA;
 
-    return ((unsigned short)msb << 8) | lsb;
-}
-
-float mlx90614_raw_to_celsius(unsigned short raw){
-    return (raw * 0.02f) - 273.15f;
-}
-
-float mlx90614_read_temp(unsigned char reg){
-    mlx90614_send_read_command(0x5A, reg);
-    unsigned short raw = mlx90614_read_word(0x5A);
-    return mlx90614_raw_to_celsius(raw);
-}
-
-float mlx90614_read_object_temp(){
-    return mlx90614_read_temp(0x07);
-}
-
-float mlx90614_read_ambient_temp(){
-    return mlx90614_read_temp(0x06);
+    i2c_interrupt_disable(3);
+    i2c_interrupt_disable(2);
+    i2c_interrupt_disable(1);
+    data = ((unsigned short)msb << 8) | lsb;
+    return data;
 }

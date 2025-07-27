@@ -2,8 +2,8 @@
 
 // As funções
 void i2c1_pin_mux(void){
-	CONF_MII1_CRS |= 0x3;
-	CONF_MII1_RX_ER |= 0x3;
+	conf_spi0_cs0 |= 0x2;
+	conf_spi0_d1 |= 0x2;
 }
 
 void uart0_pin_mux(void){

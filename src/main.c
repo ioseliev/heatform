@@ -1,3 +1,7 @@
+#include <stdio.h>
+
+#include <state.h>
+#include <canvas.h>
 #include <types.h>
 
 // Nossas bibliotecas
@@ -30,6 +34,23 @@ void IRQ_Handler(void);
 void rtc_irq_handler(void);
 void i2c_irq_handler(void);
 
+static state global_state;
+static canvas_info canvas;
+static uint8_t canvas_buffer[CANVAS_BUFFER_START_OFFSET + CANVAS_BUFFER_SIZE];
+
+
+int main() {
+	canvas_init(&canvas, canvas_buffer);
+	do {
+		global_state.seconds = (global_state.seconds + 1) % 60;
+		canvas_update(&canvas, &global_state, true);
+		printf("%s", canvas.buffer);
+		for (volatile unsigned int i = 0; i < 250000000; ++i);
+	} while (1);
+	return 0;
+}
+
+/*
 int main(void){
 	char horas[100], minutos[100], segundos[100];
 
@@ -203,18 +224,18 @@ void rtc_irq_handler(void){
 
 	// Imprime a hora
 	print_time();
-}
+}*/
 
-void IRQ_Handler(void){
+//mediavoid IRQ_Handler(void){
 	/* Verifica se é interrupção do RTC */
-	unsigned int irq_number = (INTC_SIR_IRQ & 0x7f);
-	if (irq_number == 75){
-		rtc_irq_handler();
-	}
-	if(irq_number == 71){
-		i2c_irq_handler();
-	}
+//	unsigned int irq_number = (INTC_SIR_IRQ & 0x7f);
+//	if (irq_number == 75){
+//		rtc_irq_handler();
+//	}
+//	if(irq_number == 71){
+//		i2c_irq_handler();
+//	}
 
-	/* Reconhece a IRQ */
-	INTC_CONTROL = 0x1;
-}
+//	/* Reconhece a IRQ */
+//	INTC_CONTROL = 0x1;
+//}

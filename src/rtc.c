@@ -13,7 +13,7 @@ void define_hour(char *n){
 
 void define_minute(char *n){
 	unsigned char high, low;
-	high = n[0] & 0x3;
+	high = n[0] & 0xf;
 	low = n[1] & 0xf;
 	high = high << 4;
 	high |= low;

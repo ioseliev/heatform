@@ -12,3 +12,4 @@ void intc_interrupt_i2c_accept(void){
 void intc_interrupt_gpio_accept(void){
 	INTC_MIR_CLEAR3 |= (1 << (98 - 96));
 }
+
