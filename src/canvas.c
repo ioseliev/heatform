@@ -28,7 +28,6 @@ static inline void write_header(uint8_t *buffer, state *s) {
   write_float(buffer + FMT_MIN_OFF, s->temp_min);
   write_float(buffer + FMT_MAX_OFF, s->temp_max);
 
-  buffer[CANVAS_COLS - 2] = '@';
   buffer[CANVAS_COLS - 1] = '\n';
 }
 
