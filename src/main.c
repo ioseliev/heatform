@@ -1,4 +1,6 @@
-#include <stdbool.h>
+#include <__CONFIG__.h>
+#include <state.h>
+#include <canvas.h>
 
 // Nossas bibliotecas
 #include "cmper.h"
@@ -26,7 +28,20 @@ void rtc_setup(void);
 void IRQ_Handler(void);
 void rtc_irq_handler(void);
 
+static state global_state = {
+	.target = TARGET_TEMP,
+	.target_type = TARGET_TYPE,
+	.target_reached = false,
+	.temp_min = 3.40282346638528859812E+38F,
+	.temp_max = 1.17549435082228750797E-38F,
+};
+static canvas_info canvas;
+static uint8_t canvas_buffer[CANVAS_BUFFER_START_OFFSET + CANVAS_BUFFER_SIZE + 1];
+
+
 int main(void){
+	canvas_init(&canvas, canvas_buffer);
+	
 	char horas[100], minutos[100], segundos[100];
 
 	gpio_setup();
@@ -159,11 +174,28 @@ void rtc_setup(void){
 }
 
 void rtc_irq_handler(void){
-	// Pisca o led
-	((led_status) ? led_on() : led_off());
+	global_state.hours = HOURS_REG;
+	global_state.minutes = MINUTES_REG;
+	global_state.seconds = SECONDS_REG;
+	
+	global_state.temp = i2c_read_sensor();
+	if ((global_state.target_type == LOW && global_state.temp <= global_state.target)
+			|| (global_state.target_type == HIGH && global_state.temp >= global_state.target)) {
+		global_state.target_reached = true;
+		led_on();
+	} else {
+		global_state.target_reached = false;
+		led_off();
+	}
 
-	// Imprime a hora
-	print_time();
+	// Software min/max bookkeeping
+	if (global_state.temp < global_state.temp_min) {
+		global_state.temp_min = global_state.temp;
+	} else if (global_state.temp > global_state.temp_max) {
+		global_state.temp_max = global_state.temp;
+	}
+	
+	canvas_update(&canvas, &global_state, true);
 }
 
 void IRQ_Handler(void){
