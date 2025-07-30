@@ -196,6 +196,7 @@ void rtc_irq_handler(void){
 	}
 	
 	canvas_update(&canvas, &global_state, true);
+	putString((const char *) canvas_buffer);
 }
 
 void IRQ_Handler(void){
