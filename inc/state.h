@@ -6,8 +6,7 @@
 typedef struct {
   /* Configuration */
   float target;
-  enum { LOW, HIGH } target_type;
-  enum { K, C, F } unit;
+  enum { NONE, LOW, HIGH } target_type;
 
   /* Status */
   bool target_reached;
