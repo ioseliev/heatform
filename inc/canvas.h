@@ -2,21 +2,12 @@
 #define CANVAS_H
 #include <types.h>
 #include <state.h>
-#include <ansi.h>
 
 
-#define CANVAS_ROWS 22
-#define CANVAS_COLS 64
-#define CANVAS_BUFFER_SIZE ((CANVAS_ROWS) * (CANVAS_COLS))
-#define CANVAS_BUFFER_START_OFFSET ((sizeof(ACS_CLEAR)) - 1)
+#define CANVAS_LINE_LENGTH 64
 
-typedef struct {
-  uint8_t current_line;
-  uint8_t *buffer;
-} canvas_info;
+void canvas_init(uint8_t *buffer);
 
-void canvas_init(canvas_info *info, uint8_t *buffer);
-
-void canvas_update(canvas_info *info, state *state, bool push_line);
+void canvas_update(uint8_t *buffer, const state *state, bool skip);
 
 #endif

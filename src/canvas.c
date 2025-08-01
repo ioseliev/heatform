@@ -2,71 +2,32 @@
 #include <utilities.h>
 
 
-void canvas_init(canvas_info *info, uint8_t *buffer) {
-  info->current_line = 2;
-  info->buffer = buffer;
+void canvas_init(uint8_t *buffer) {
+  const uint8_t FORMAT[] = " [00:00:00] Obj:        Amb:        Min:        Max:      ";
 
-  memcpy(buffer, (const uint8_t *) ACS_CLEAR, sizeof(ACS_CLEAR) - 1);
-  
-  buffer += CANVAS_BUFFER_START_OFFSET;
-  memset(buffer, ' ', CANVAS_BUFFER_SIZE);
-  memcpy(buffer, (const uint8_t *) "HEATFORM", sizeof("HEATFORM") - 1);
-
-  for (uint8_t i = 0; i < CANVAS_ROWS; ++i) {
-    buffer[i * CANVAS_COLS + CANVAS_COLS - 1] = '\n';
-  }
-
-  buffer[CANVAS_BUFFER_SIZE] = '\0';
-}
-
-static inline void write_header(uint8_t *buffer, state *s) {
-  const uint8_t FORMAT[] = "     NOW Current:        Min:        Max:       " ACS_RESET;
-
-  const size_t FMT_CUR_OFF = 18;
-  const size_t FMT_MIN_OFF = 30;
-  const size_t FMT_MAX_OFF = 42;
-  
+  memset(buffer, ' ', CANVAS_LINE_LENGTH);
   memcpy(buffer, FORMAT, sizeof(FORMAT) - 1);
 
-  write_float(buffer + FMT_CUR_OFF, s->temp);
-  write_float(buffer + FMT_MIN_OFF, s->temp_min);
-  write_float(buffer + FMT_MAX_OFF, s->temp_max);
-
-  buffer[CANVAS_COLS - 1] = '\n';
+  buffer[CANVAS_LINE_LENGTH] = '\0';
 }
 
-static inline void write_line(uint8_t *place, state *s) {
-  const uint8_t FORMAT[] = "     [      ] Current:        Min:        Max:       " ACS_RESET;
-  
-  const size_t FMT_ACS_OFF = 0;
-  const size_t FMT_TIME_OFF = 6;
-  const size_t FMT_CURRENT_OFF = 23;
-  const size_t FMT_MIN_OFF = 35;
-  const size_t FMT_MAX_OFF = 47;
-  
-  memcpy(place, FORMAT, sizeof(FORMAT) - 1);
+void canvas_update(uint8_t *buffer, const state *state, bool skip) {
+  const size_t FMT_CRLF = 0;
+  const size_t FMT_HOURS = 2;
+  const size_t FMT_MINUTES = 5;
+  const size_t FMT_SECONDS = 8;
+  const size_t FMT_OBJ = 17;
+  const size_t FMT_AMB = 29;
+  const size_t FMT_MIN = 41;
+  const size_t FMT_MAX = 53;
 
-  memcpy(place + FMT_ACS_OFF, (const uint8_t *) (s->target_reached ? ACS_YELLOW : ACS_RESET), 5);
+  buffer[FMT_CRLF] = (skip == true ? '\n' : '\r');
 
-  write_time(place + FMT_TIME_OFF, s->hours, s->minutes, s->seconds);
+  write_bcd(buffer + FMT_HOURS, state->hours);
+  write_bcd(buffer + FMT_MINUTES, state->minutes);
+  write_bcd(buffer + FMT_SECONDS, state->seconds);
 
-  write_float(place + FMT_CURRENT_OFF, s->temp);
-  write_float(place + FMT_MIN_OFF, s->temp_min);
-  write_float(place + FMT_MAX_OFF, s->temp_max);
-
-  place[CANVAS_COLS - 1] = '\n';
-}
-
-void canvas_update(canvas_info *info, state *state, bool push_line) {
-  uint8_t *const buffer = info->buffer + CANVAS_BUFFER_START_OFFSET;
-  
-  write_header(buffer + CANVAS_COLS, state);
-  if (push_line) {
-    if (info->current_line == CANVAS_ROWS) {
-      memcpy(buffer + 2 * CANVAS_COLS, buffer + 3 * CANVAS_COLS, (CANVAS_ROWS - 3) * CANVAS_COLS);
-      --info->current_line;
-    }
-    write_line(buffer + info->current_line * CANVAS_COLS, state);
-    ++info->current_line;
-  }
+  write_float(buffer + FMT_OBJ, state->temp);
+  write_float(buffer + FMT_MIN, state->temp_min);
+  write_float(buffer + FMT_MAX, state->temp_max);
 }

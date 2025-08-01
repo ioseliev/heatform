@@ -32,15 +32,14 @@ static state global_state = {
 	.target = TARGET_TEMP,
 	.target_type = TARGET_TYPE,
 	.target_reached = false,
-	.temp_min = 3.40282346638528859812E+38F,
-	.temp_max = 1.17549435082228750797E-38F,
+	.temp_min = 1000.0f,
+	.temp_max = -1000.0f,
 };
-static canvas_info canvas;
-static uint8_t canvas_buffer[CANVAS_BUFFER_START_OFFSET + CANVAS_BUFFER_SIZE + 1];
+static uint8_t canvas_buffer[CANVAS_LINE_LENGTH];
 
 
 int main(void){
-	canvas_init(&canvas, canvas_buffer);
+	canvas_init(canvas_buffer);
 	
 	char horas[100], minutos[100], segundos[100];
 
@@ -195,7 +194,7 @@ void rtc_irq_handler(void){
 		global_state.temp_max = global_state.temp;
 	}
 	
-	canvas_update(&canvas, &global_state, true);
+	canvas_update(canvas_buffer, &global_state, global_state.target_reached);
 	putString((const char *) canvas_buffer);
 }
 
