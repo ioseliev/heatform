@@ -3,7 +3,7 @@ AS := arm-none-eabi-as
 LD := arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
 
-CFLAGS := -ffreestanding -fno-builtin -mcpu=cortex-a8 -mfpu=vfpv3 -mhard-float -g -O2 -std=c11 -Iinc/
+CFLAGS := -ffreestanding -fno-builtin -Wall -Wextra -Wpedantic -mcpu=cortex-a8 -mfpu=vfpv3 -mhard-float -g -O2 -std=c11 -Iinc/
 AFLAGS := -mfpu=neon
 
 TARGET := bin/heatform.bin
