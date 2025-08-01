@@ -55,11 +55,7 @@ void write_float(uint8_t buffer[5], float value) {
   }
 }
 
-void write_time(uint8_t buffer[6], uint8_t hours, uint8_t minutes, uint8_t seconds) {
-  buffer[0] = '0' + (hours >> 4);
-  buffer[1] = '0' + (hours & 0x0F);
-  buffer[2] = '0' + (minutes >> 4);
-  buffer[3] = '0' + (minutes & 0x0F);
-  buffer[4] = '0' + (seconds >> 4);
-  buffer[5] = '0' + (seconds & 0x0F);
+void write_bcd(uint8_t buffer[2], uint8_t value) {
+  buffer[0] = '0' + (value >> 4);
+  buffer[1] = '0' + (value & 0x0F);
 }
