@@ -190,7 +190,8 @@ void rtc_irq_handler(void){
 	// Software min/max bookkeeping
 	if (global_state.temp < global_state.temp_min) {
 		global_state.temp_min = global_state.temp;
-	} else if (global_state.temp > global_state.temp_max) {
+	}
+	if (global_state.temp > global_state.temp_max) {
 		global_state.temp_max = global_state.temp;
 	}
 	
